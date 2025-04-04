@@ -1,0 +1,24 @@
+const mongoose = require("mongoose");
+
+const orderSchema = new mongoose.Schema({
+  customer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  shopName: { type: String, required: true },
+  address: { type: String, required: true },
+  deliveryTime: { type: String, required: true },
+  amulTaazaCrates: { type: Number, default: 0 },
+  amulGoldCrates: { type: Number, default: 0 },
+  amulBuffaloCrates: { type: Number, default: 0 },
+  gokulCowCrates: { type: Number, default: 0 },
+  gokulBuffaloCrates: { type: Number, default: 0 },
+  gokulFullCreamCrates: { type: Number, default: 0 },
+  mahanandaCrates: { type: Number, default: 0 },
+  status: { type: String, default: "Pending" },
+  paymentStatus: { type: String, default: "Unpaid" },
+  createdAt: { type: Date, default: Date.now },
+});
+
+module.exports = mongoose.model("Order", orderSchema);
