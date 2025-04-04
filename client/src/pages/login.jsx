@@ -35,15 +35,14 @@ const LoginPage = () => {
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
+      if (response.ok) {
+        localStorage.setItem("token", data.token);
+        window.location.href = data.redirectTo;
+      } else {
+        setError(data.message); // to handle invalid credentials etc.
       }
-
-      localStorage.setItem("token", data.token);
-      alert("Login successful!");
-      navigate("/");
     } catch (err) {
-      setError(err.message);
+      setError(err.message); // to handle fetch/network error
     }
   };
 

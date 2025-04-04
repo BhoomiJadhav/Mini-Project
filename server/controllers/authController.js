@@ -49,6 +49,9 @@ const registerUser = async (req, res) => {
         : "customer";
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    console.log("Password before hashing:", password);
+    console.log("Hashed password being saved:", hashedPassword);
+
     const user = await User.create({
       name,
       email,
@@ -99,12 +102,17 @@ const loginUser = async (req, res) => {
 
   try {
     const user = await User.findOne({ email });
-    const { email, password } = req.body;
 
     if (!email || !password) {
       return res
         .status(400)
         .json({ message: "Email and password are required" });
+    }
+    console.log("Email received:", email);
+    console.log("User found:", user);
+    if (user) {
+      console.log("Plain password:", password);
+      console.log("Hashed password in DB:", user.password);
     }
 
     if (!user) {
@@ -125,7 +133,8 @@ const loginUser = async (req, res) => {
     }
 
     // Automatically assign role based on email
-    const role = email === process.env.ADMIN_EMAIL ? "admin" : "customer";
+    // Use role from DB instead of hardcoded
+    const role = user.role;
 
     const token = jwt.sign(
       { _id: user._id, username: user.username, email: user.email, role },
@@ -133,7 +142,11 @@ const loginUser = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    res.json({ token });
+    res.json({
+      token,
+      role,
+      redirectTo: role === "admin" ? "/admin-dashboard" : "/customer-dashboard",
+    });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ message: "Server error." });
