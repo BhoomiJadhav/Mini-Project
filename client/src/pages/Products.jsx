@@ -31,22 +31,25 @@ const MilkPrices = () => {
   ];
 
   return (
-    <div className="bg-white min-h-screen flex flex-col items-center justify-center p-6 ">
-      <div className="max-w-4xl bg-[#ededed] shadow-lg rounded-2xl p-8 text-center border-[#83a4c8] border-[10px]">
-        <h1 className="text-3xl font-bold text-[#6c4836] mb-6">Milk Prices</h1>
+    <div className="bg-[#fff] min-h-screen flex flex-col items-center py-10 px-4">
+      <h1 className="text-4xl font-bold text-[#6c4836] mb-8">Milk Prices</h1>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl">
         {milkProducts.map((category, index) => (
-          <div key={index} className="mb-6">
-            <h2 className="text-2xl font-semibold text-[#6c4836] border-b-2 border-[#83a4c8] pb-1">
+          <div
+            key={index}
+            className="bg-white shadow-lg rounded-xl p-6 border-t-4 border-[#83a4c8]"
+          >
+            <h2 className="text-2xl font-semibold text-[#6c4836] border-b-2 border-[#83a4c8] pb-2 mb-4">
               {category.brand}
             </h2>
-            <ul className="mt-3 space-y-2">
+            <ul className="space-y-3">
               {category.items.map((item, i) => (
                 <li
                   key={i}
-                  className="flex justify-between bg-white p-3 rounded-lg shadow-sm border-l-4 border-[#6c4836]"
+                  className="flex justify-between bg-[#fdfdfd] p-3 rounded-lg shadow-sm border-l-4 border-[#6c4836]"
                 >
-                  <span className="text-gray-700 font-medium">{item.name}</span>
+                  <span className="text-gray-800 font-medium">{item.name}</span>
                   <span className="text-[#d7382e] font-semibold">
                     {item.price}
                   </span>

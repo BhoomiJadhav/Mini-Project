@@ -1,6 +1,9 @@
 import React from "react";
 
+import { useNavigate } from "react-router-dom";
+
 const OrderInstructions = () => {
+  const navigate = useNavigate();
   return (
     <div className="bg-white min-h-screen flex flex-col items-center justify-center p-6 ">
       <div className="max-w-3xl bg-[#ededed] shadow-lg rounded-2xl p-8 text-center border-[#83a4c8] border-[10px]">
@@ -28,7 +31,10 @@ const OrderInstructions = () => {
           </p>
         </div>
 
-        <button className="mt-8 bg-[#54a9f7] hover:bg-blue-600 text-white font-semibold py-3 px-8 rounded-xl shadow-md text-lg">
+        <button
+          className="mt-8 bg-[#54a9f7] hover:bg-blue-600 text-white font-semibold py-3 px-8 rounded-xl shadow-md text-lg"
+          onClick={() => navigate("/login")}
+        >
           Order Now
         </button>
       </div>
