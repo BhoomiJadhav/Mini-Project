@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
+const paymentRoutes = require("./routes/payment");
 
 const app = express();
 
@@ -20,6 +21,8 @@ const adminRoutes = require("./routes/adminRoutes");
 app.use("/api/auth", authRoutes); // Authentication routes
 app.use("/api/orders", orderRoutes); // Customer order management
 app.use("/api/admin", adminRoutes); // Admin controls
+
+app.use("/api/payment", paymentRoutes);
 
 // Default route
 app.get("/", (req, res) => {
