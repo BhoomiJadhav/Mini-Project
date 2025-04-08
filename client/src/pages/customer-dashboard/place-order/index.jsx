@@ -1,10 +1,10 @@
-// import { useState, useEffect } from "react";
+// import React, { useEffect, useState } from "react";
+// import axios from "axios";
+// import toast from "react-hot-toast";
 // import { useNavigate } from "react-router-dom";
 
 // const PlaceOrder = () => {
 //   const navigate = useNavigate();
-//   const token = localStorage.getItem("token");
-
 //   const [form, setForm] = useState({
 //     shopName: "",
 //     address: "",
@@ -27,9 +27,9 @@
 //     const existingOrder = JSON.parse(localStorage.getItem("editOrder"));
 //     if (existingOrder) {
 //       setForm({
-//         shopName: existingOrder.shopName,
-//         address: existingOrder.address,
-//         deliveryTime: existingOrder.deliveryTime,
+//         shopName: existingOrder.shopName || "",
+//         address: existingOrder.address || "",
+//         deliveryTime: existingOrder.deliveryTime || "",
 //         deliveryDate: existingOrder.deliveryDate?.split("T")[0] || "",
 //         amulTaazaCrates: existingOrder.amulTaazaCrates || 0,
 //         amulGoldCrates: existingOrder.amulGoldCrates || 0,
@@ -43,75 +43,77 @@
 //       setIsEditMode(true);
 //       setOrderId(existingOrder._id);
 //     } else {
-//       // Ensure fresh state if not editing
+//       // Reset form if not editing
+//       setForm({
+//         shopName: "",
+//         address: "",
+//         deliveryTime: "",
+//         deliveryDate: "",
+//         amulTaazaCrates: 0,
+//         amulGoldCrates: 0,
+//         amulBuffaloCrates: 0,
+//         gokulCowCrates: 0,
+//         gokulBuffaloCrates: 0,
+//         gokulFullCreamCrates: 0,
+//         mahanandaCrates: 0,
+//         paymentMethod: "COD",
+//       });
 //       setIsEditMode(false);
 //       setOrderId(null);
-//       localStorage.removeItem("editOrder");
 //     }
 //   }, []);
-//   const handleNewOrder = () => {
-//     localStorage.removeItem("editOrder");
-//     navigate("/customer-dashboard/place-order");
-//   };
 
 //   const handleChange = (e) => {
 //     const { name, value } = e.target;
 //     setForm((prev) => ({
 //       ...prev,
-//       [name]: name.includes("Crates") ? parseInt(value) : value,
+//       [name]: value,
 //     }));
 //   };
 
-//   //
 //   const handleSubmit = async (e) => {
 //     e.preventDefault();
 
-//     const payload = { ...form };
-
-//     if (form.paymentMethod === "ONLINE") {
-//       alert("Payment simulated successfully. Proceeding with order...");
-//     }
-
 //     try {
-//       const url = isEditMode
-//         ? `http://localhost:5000/api/orders/${orderId}`
-//         : "http://localhost:5000/api/orders";
+//       const token = localStorage.getItem("token");
 
-//       const method = isEditMode ? "PUT" : "POST";
-
-//       const res = await fetch(url, {
-//         method,
+//       const config = {
 //         headers: {
-//           "Content-Type": "application/json",
 //           Authorization: `Bearer ${token}`,
 //         },
-//         body: JSON.stringify(payload),
-//       });
+//       };
 
-//       const data = await res.json();
-
-//       if (!res.ok) throw new Error(data.message || "Something went wrong");
-
-//       if (isEditMode) {
-//         alert(data.message || "Order updated successfully.");
-//         localStorage.removeItem("editOrder");
+//       if (isEditMode && orderId) {
+//         await axios.put(
+//           `http://localhost:5000/api/orders/${orderId}`,
+//           form,
+//           config
+//         );
+//         toast.success("Order updated successfully!");
 //       } else {
-//         alert(data.message || "Order placed successfully.");
+//         await axios.post(
+//           "http://localhost:5000/api/orders/place",
+//           form,
+//           config
+//         );
+//         toast.success("Order placed successfully!");
 //       }
 
+//       localStorage.removeItem("editOrder");
 //       navigate("/customer-dashboard/ongoing");
 //     } catch (error) {
-//       console.error("Error submitting order:", error.message);
-//       alert("Error: " + error.message);
+//       console.error(error);
+//       toast.error("Something went wrong!");
 //     }
 //   };
 
 //   return (
-//     <div className="p-6 max-w-2xl mx-auto">
+//     <div className="max-w-2xl mx-auto p-4">
 //       <h2 className="text-2xl font-bold mb-4">
-//         {isEditMode ? "✏️ Edit Order" : "📝 Place New Order"}
+//         {isEditMode ? "Edit Order" : "Place Order"}
 //       </h2>
 //       <form onSubmit={handleSubmit} className="space-y-4">
+//         {/* Basic Details */}
 //         <input
 //           type="text"
 //           name="shopName"
@@ -131,31 +133,32 @@
 //           required
 //         />
 //         <input
-//           type="text"
+//           type="time"
 //           name="deliveryTime"
-//           placeholder="Delivery Time (e.g., 4:30 AM)"
+//           placeholder="Delivery Time"
 //           value={form.deliveryTime}
 //           onChange={handleChange}
 //           className="w-full p-2 border rounded"
 //           required
 //         />
-//         <label className="block mb-2 text-sm font-medium">Delivery Date</label>
 //         <input
 //           type="date"
+//           name="deliveryDate"
 //           value={form.deliveryDate}
-//           onChange={(e) => setForm({ ...form, deliveryDate: e.target.value })}
+//           onChange={handleChange}
 //           className="w-full p-2 border rounded"
+//           required
 //         />
 
-//         <div className="grid grid-cols-2 gap-4">
-//           {/* Amul */}
+//         {/* Milk Crates Inputs */}
+//         <div className="grid grid-cols-2 gap-2">
 //           <input
 //             type="number"
 //             name="amulTaazaCrates"
 //             placeholder="Amul Taaza Crates"
 //             value={form.amulTaazaCrates}
 //             onChange={handleChange}
-//             className="p-2 border rounded w-full"
+//             className="p-2 border rounded"
 //           />
 //           <input
 //             type="number"
@@ -163,7 +166,7 @@
 //             placeholder="Amul Gold Crates"
 //             value={form.amulGoldCrates}
 //             onChange={handleChange}
-//             className="p-2 border rounded w-full"
+//             className="p-2 border rounded"
 //           />
 //           <input
 //             type="number"
@@ -171,17 +174,15 @@
 //             placeholder="Amul Buffalo Crates"
 //             value={form.amulBuffaloCrates}
 //             onChange={handleChange}
-//             className="p-2 border rounded w-full"
+//             className="p-2 border rounded"
 //           />
-
-//           {/* Gokul */}
 //           <input
 //             type="number"
 //             name="gokulCowCrates"
 //             placeholder="Gokul Cow Crates"
 //             value={form.gokulCowCrates}
 //             onChange={handleChange}
-//             className="p-2 border rounded w-full"
+//             className="p-2 border rounded"
 //           />
 //           <input
 //             type="number"
@@ -189,7 +190,7 @@
 //             placeholder="Gokul Buffalo Crates"
 //             value={form.gokulBuffaloCrates}
 //             onChange={handleChange}
-//             className="p-2 border rounded w-full"
+//             className="p-2 border rounded"
 //           />
 //           <input
 //             type="number"
@@ -197,46 +198,32 @@
 //             placeholder="Gokul Full Cream Crates"
 //             value={form.gokulFullCreamCrates}
 //             onChange={handleChange}
-//             className="p-2 border rounded w-full"
+//             className="p-2 border rounded"
 //           />
-
-//           {/* Mahananda */}
 //           <input
 //             type="number"
 //             name="mahanandaCrates"
 //             placeholder="Mahananda Crates"
 //             value={form.mahanandaCrates}
 //             onChange={handleChange}
-//             className="p-2 border rounded w-full"
+//             className="p-2 border rounded"
 //           />
 //         </div>
 
-//         <div className="flex items-center gap-4 mt-4">
-//           <label className="flex items-center gap-2">
-//             <input
-//               type="radio"
-//               name="paymentMethod"
-//               value="COD"
-//               checked={form.paymentMethod === "COD"}
-//               onChange={handleChange}
-//             />
-//             Pay at Delivery
-//           </label>
-//           <label className="flex items-center gap-2">
-//             <input
-//               type="radio"
-//               name="paymentMethod"
-//               value="ONLINE"
-//               checked={form.paymentMethod === "ONLINE"}
-//               onChange={handleChange}
-//             />
-//             Pay Now
-//           </label>
-//         </div>
+//         {/* Payment */}
+//         <select
+//           name="paymentMethod"
+//           value={form.paymentMethod}
+//           onChange={handleChange}
+//           className="w-full p-2 border rounded"
+//         >
+//           <option value="COD">Cash on Delivery</option>
+//           <option value="Online">Online</option>
+//         </select>
 
 //         <button
 //           type="submit"
-//           className="bg-green-600 text-white px-6 py-2 rounded"
+//           className="w-full bg-[#5b8db7] text-white p-2 rounded hover:bg-[#44789b]"
 //         >
 //           {isEditMode ? "Update Order" : "Place Order"}
 //         </button>
@@ -247,9 +234,10 @@
 
 // export default PlaceOrder;
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const PlaceOrder = () => {
   const navigate = useNavigate();
@@ -290,24 +278,6 @@ const PlaceOrder = () => {
       });
       setIsEditMode(true);
       setOrderId(existingOrder._id);
-    } else {
-      // Reset form if not editing
-      setForm({
-        shopName: "",
-        address: "",
-        deliveryTime: "",
-        deliveryDate: "",
-        amulTaazaCrates: 0,
-        amulGoldCrates: 0,
-        amulBuffaloCrates: 0,
-        gokulCowCrates: 0,
-        gokulBuffaloCrates: 0,
-        gokulFullCreamCrates: 0,
-        mahanandaCrates: 0,
-        paymentMethod: "COD",
-      });
-      setIsEditMode(false);
-      setOrderId(null);
     }
   }, []);
 
@@ -321,10 +291,8 @@ const PlaceOrder = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       const token = localStorage.getItem("token");
-
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -356,126 +324,146 @@ const PlaceOrder = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4">
-        {isEditMode ? "Edit Order" : "Place Order"}
-      </h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Basic Details */}
-        <input
-          type="text"
-          name="shopName"
-          placeholder="Shop Name"
-          value={form.shopName}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
-        />
-        <input
-          type="text"
-          name="address"
-          placeholder="Address"
-          value={form.address}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
-        />
-        <input
-          type="time"
-          name="deliveryTime"
-          placeholder="Delivery Time"
-          value={form.deliveryTime}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
-        />
-        <input
-          type="date"
-          name="deliveryDate"
-          value={form.deliveryDate}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
-        />
+    <div className="flex min-h-screen bg-[#f8f8f8]">
+      {/* Sidebar */}
+      <div className="w-64 bg-[#4F83CC] text-white p-6 space-y-6 hidden md:block shadow-md">
+        <h2 className="text-2xl font-bold">Kumar Milk Distributors</h2>
+        <nav className="space-y-4">
+          <Link
+            to="/customer-dashboard"
+            className="block hover:bg-white hover:text-[#4F83CC] px-3 py-2 rounded"
+          >
+            Dashboard
+          </Link>
+          <Link
+            to="/customer-dashboard/ongoing"
+            className="block hover:bg-white hover:text-[#4F83CC] px-3 py-2 rounded"
+          >
+            Ongoing Orders
+          </Link>
+          <Link
+            to="/customer-dashboard/history"
+            className="block hover:bg-white hover:text-[#4F83CC] px-3 py-2 rounded"
+          >
+            Order History
+          </Link>
+        </nav>
+      </div>
 
-        {/* Milk Crates Inputs */}
-        <div className="grid grid-cols-2 gap-2">
-          <input
-            type="number"
-            name="amulTaazaCrates"
-            placeholder="Amul Taaza Crates"
-            value={form.amulTaazaCrates}
-            onChange={handleChange}
-            className="p-2 border rounded"
-          />
-          <input
-            type="number"
-            name="amulGoldCrates"
-            placeholder="Amul Gold Crates"
-            value={form.amulGoldCrates}
-            onChange={handleChange}
-            className="p-2 border rounded"
-          />
-          <input
-            type="number"
-            name="amulBuffaloCrates"
-            placeholder="Amul Buffalo Crates"
-            value={form.amulBuffaloCrates}
-            onChange={handleChange}
-            className="p-2 border rounded"
-          />
-          <input
-            type="number"
-            name="gokulCowCrates"
-            placeholder="Gokul Cow Crates"
-            value={form.gokulCowCrates}
-            onChange={handleChange}
-            className="p-2 border rounded"
-          />
-          <input
-            type="number"
-            name="gokulBuffaloCrates"
-            placeholder="Gokul Buffalo Crates"
-            value={form.gokulBuffaloCrates}
-            onChange={handleChange}
-            className="p-2 border rounded"
-          />
-          <input
-            type="number"
-            name="gokulFullCreamCrates"
-            placeholder="Gokul Full Cream Crates"
-            value={form.gokulFullCreamCrates}
-            onChange={handleChange}
-            className="p-2 border rounded"
-          />
-          <input
-            type="number"
-            name="mahanandaCrates"
-            placeholder="Mahananda Crates"
-            value={form.mahanandaCrates}
-            onChange={handleChange}
-            className="p-2 border rounded"
-          />
-        </div>
+      {/* Main Form Area */}
+      <div className="flex-1 p-6">
+        <h1 className="text-3xl font-bold text-[#4F83CC] mb-6">
+          {isEditMode ? "Edit Order" : "Place New Order"}
+        </h1>
 
-        {/* Payment */}
-        <select
-          name="paymentMethod"
-          value={form.paymentMethod}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white p-6 rounded-xl shadow space-y-6"
         >
-          <option value="COD">Cash on Delivery</option>
-          <option value="Online">Online</option>
-        </select>
+          {/* Basic Details */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block mb-1 font-semibold">Shop Name</label>
+              <input
+                type="text"
+                name="shopName"
+                value={form.shopName}
+                onChange={handleChange}
+                className="w-full border p-2 rounded"
+                required
+              />
+            </div>
 
-        <button
-          type="submit"
-          className="w-full bg-[#5b8db7] text-white p-2 rounded hover:bg-[#44789b]"
-        >
-          {isEditMode ? "Update Order" : "Place Order"}
-        </button>
-      </form>
+            <div>
+              <label className="block mb-1 font-semibold">Address</label>
+              <input
+                type="text"
+                name="address"
+                value={form.address}
+                onChange={handleChange}
+                className="w-full border p-2 rounded"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block mb-1 font-semibold">Delivery Time</label>
+              <input
+                type="time"
+                name="deliveryTime"
+                value={form.deliveryTime}
+                onChange={handleChange}
+                className="w-full border p-2 rounded"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block mb-1 font-semibold">Delivery Date</label>
+              <input
+                type="date"
+                name="deliveryDate"
+                value={form.deliveryDate}
+                onChange={handleChange}
+                className="w-full border p-2 rounded"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Crates Section */}
+          <div>
+            <h2 className="text-xl font-bold mb-2">Milk Crates</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                { name: "amulTaazaCrates", label: "Amul Taaza Crates" },
+                { name: "amulGoldCrates", label: "Amul Gold Crates" },
+                { name: "amulBuffaloCrates", label: "Amul Buffalo Crates" },
+                { name: "gokulCowCrates", label: "Gokul Cow Crates" },
+                { name: "gokulBuffaloCrates", label: "Gokul Buffalo Crates" },
+                {
+                  name: "gokulFullCreamCrates",
+                  label: "Gokul Full Cream Crates",
+                },
+                { name: "mahanandaCrates", label: "Mahananda Crates" },
+              ].map(({ name, label }) => (
+                <div key={name}>
+                  <label className="block mb-1 font-medium">{label}</label>
+                  <input
+                    type="number"
+                    name={name}
+                    value={form[name]}
+                    onChange={handleChange}
+                    className="w-full border p-2 rounded"
+                    min="0"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Payment */}
+          <div>
+            <label className="block font-semibold mb-1">Payment Method</label>
+            <select
+              name="paymentMethod"
+              value={form.paymentMethod}
+              onChange={handleChange}
+              className="w-full border p-2 rounded"
+            >
+              <option value="COD">Cash on Delivery</option>
+              <option value="Online">Online</option>
+            </select>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-[#4F83CC] text-white p-3 rounded hover:bg-[#83a4c8] transition"
+          >
+            {isEditMode ? "Update Order" : "Place Order"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

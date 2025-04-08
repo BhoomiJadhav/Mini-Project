@@ -37,14 +37,11 @@ const Ongoing = () => {
   const isBeforeDeliveryBuffer = (deliveryDate, deliveryTime) => {
     const now = new Date();
     const deliveryDateTime = new Date(deliveryDate);
-
     const [hours, minutes] = deliveryTime.split(":").map(Number);
     deliveryDateTime.setHours(hours, minutes, 0, 0);
-
     const bufferTime = new Date(
       deliveryDateTime.getTime() - 2 * 60 * 60 * 1000
-    ); // 2 hours before
-
+    );
     return now < bufferTime;
   };
 
@@ -55,9 +52,7 @@ const Ongoing = () => {
 
   const handleDelete = async (orderId, deliveryDate, deliveryTime) => {
     if (!isBeforeDeliveryBuffer(deliveryDate, deliveryTime)) {
-      alert(
-        "You can only delete the order before 12 PM on the day before delivery."
-      );
+      alert("You can only delete the order before 2 hours of delivery.");
       return;
     }
 
@@ -79,71 +74,104 @@ const Ongoing = () => {
   };
 
   return (
-    <div className="p-6">
-      <h2 className="text-xl font-bold mb-4">📦 Ongoing Orders</h2>
-      {loading ? (
-        <p>Loading...</p>
-      ) : Array.isArray(orders) ? (
-        orders.length > 0 ? (
-          orders.map((order) => (
-            <div
-              key={order._id}
-              className="border border-gray-300 rounded p-4 shadow-sm mb-4"
-            >
-              <p>
-                <strong>Shop Name:</strong> {order.shopName}
-              </p>
-              <p>
-                <strong>Delivery Time:</strong> {order.deliveryTime}
-              </p>
-              <p>
-                <strong>Milk Crates:</strong> Amul: {order.amul}, Gokul:{" "}
-                {order.gokul}, Mahananda: {order.mahananda}
-              </p>
-              <p>
-                <strong>Payment Method:</strong> {order.paymentMethod}
-              </p>
-              <p>
-                <strong>Status:</strong> {order.status}
-              </p>
-              <p>
-                <strong>Delivery Date:</strong>{" "}
-                {new Date(order.deliveryDate).toLocaleDateString()}
-              </p>
+    <div className="flex min-h-screen bg-gray-100">
+      {/* Sidebar */}
+      <aside className="w-60 bg-[#4F83CC] text-white p-6">
+        <h1 className="text-2xl font-bold mb-6">Customer</h1>
+        <nav className="space-y-4">
+          <button
+            onClick={() => navigate("/customer-dashboard")}
+            className="block w-full text-left hover:text-[#83a4c8] p-2 rounded"
+          >
+            📦 Place Order
+          </button>
+          <button
+            onClick={() => navigate("/customer-dashboard/ongoing")}
+            className="block w-full text-left hover:text-[#83a4c8] p-2 rounded"
+          >
+            📋 Ongoing Orders
+          </button>
+          <button
+            onClick={() => navigate("/customer-dashboard/history")}
+            className="block w-full text-left hover:text-[#83a4c8] p-2 rounded"
+          >
+            📚 Order History
+          </button>
+        </nav>
+      </aside>
 
-              {isBeforeDeliveryBuffer(
-                order.deliveryDate,
-                order.deliveryTime
-              ) && (
-                <div className="mt-3 flex gap-4">
-                  <button
-                    onClick={() => handleEdit(order)}
-                    className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() =>
-                      handleDelete(
-                        order._id,
-                        order.deliveryDate,
-                        order.deliveryTime
-                      )
-                    }
-                    className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
+      {/* Main Content */}
+      <main className="flex-1 p-8">
+        <h2 className="text-2xl font-semibold mb-6 ">📋 Ongoing Orders</h2>
+
+        {loading ? (
+          <p>Loading...</p>
+        ) : Array.isArray(orders) ? (
+          orders.length > 0 ? (
+            <div className="space-y-6">
+              {orders.map((order) => (
+                <div
+                  key={order._id}
+                  className="bg-white p-6 rounded-xl shadow hover:shadow-md transition"
+                >
+                  <div className="grid sm:grid-cols-2 gap-3 text-gray-700">
+                    <p>
+                      <strong>Shop Name:</strong> {order.shopName}
+                    </p>
+                    <p>
+                      <strong>Delivery Time:</strong> {order.deliveryTime}
+                    </p>
+                    <p>
+                      <strong>Milk Crates:</strong> Amul: {order.amul}, Gokul:{" "}
+                      {order.gokul}, Mahananda: {order.mahananda}
+                    </p>
+                    <p>
+                      <strong>Payment Method:</strong> {order.paymentMethod}
+                    </p>
+                    <p>
+                      <strong>Status:</strong> {order.status}
+                    </p>
+                    <p>
+                      <strong>Delivery Date:</strong>{" "}
+                      {new Date(order.deliveryDate).toLocaleDateString()}
+                    </p>
+                  </div>
+
+                  {isBeforeDeliveryBuffer(
+                    order.deliveryDate,
+                    order.deliveryTime
+                  ) && (
+                    <div className="mt-4 flex gap-4">
+                      <button
+                        onClick={() => handleEdit(order)}
+                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleDelete(
+                            order._id,
+                            order.deliveryDate,
+                            order.deliveryTime
+                          )
+                        }
+                        className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
+              ))}
             </div>
-          ))
+          ) : (
+            <p>No ongoing orders found.</p>
+          )
         ) : (
-          <p>No ongoing orders found.</p>
-        )
-      ) : (
-        <p>Something went wrong. Try logging in again.</p>
-      )}
+          <p>Something went wrong. Try logging in again.</p>
+        )}
+      </main>
     </div>
   );
 };

@@ -47,10 +47,13 @@ const LandingPage = () => {
               100% Fresh <br /> Organic Milk
             </h1>
             <p className="text-gray-600 text-lg">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Effortlessly manage daily milk orders, track deliveries, and
+              ensure smooth operations—all in one place.
             </p>
-            <button className="bg-[#54a9f7] hover:bg-blue-600 text-white font-semibold py-4 px-10 rounded-xl shadow-md text-lg">
+            <button
+              className="bg-[#54a9f7] hover:bg-blue-600 text-white font-semibold py-4 px-10 rounded-xl shadow-md text-lg"
+              onClick={() => navigate("/prices")}
+            >
               Learn More
             </button>
           </div>

@@ -1,5 +1,6 @@
 const Order = require("../models/Order.js");
 const jwt = require("jsonwebtoken");
+// const Inventory = require("../models/Inventory");
 
 // Helper to extract user ID from token
 const getUserIdFromToken = (req) => {
@@ -19,7 +20,6 @@ const getUserIdFromToken = (req) => {
 const placeOrder = async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
-
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res
         .status(401)
@@ -28,29 +28,64 @@ const placeOrder = async (req, res) => {
 
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const customerId = decoded.userId;
 
-    const customerId = decoded.userId; // ✅ Consistent field
-    console.log("Customer ID to attach:", customerId);
+    const {
+      amulBuffaloCrates = 0,
+      amulGoldCrates = 0,
+      amulTaazaCrates = 0,
+      gokulCowCrates = 0,
+      gokulBuffaloCrates = 0,
+      gokulFullCreamCrates = 0,
+      mahanandaCrates = 0,
+    } = req.body;
 
-    const orderData = {
+    const deliveryDate = new Date();
+    deliveryDate.setDate(deliveryDate.getDate() + 1);
+    deliveryDate.setHours(0, 0, 0, 0); // clean start of day
+
+    // const inventory = await Inventory.findOne({ date: deliveryDate });
+    // if (!inventory) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "Inventory not set for that day" });
+    // }
+
+    // // Check if enough stock
+    // const isStockAvailable =
+    //   inventory.amulBuffaloCrates >= amulBuffaloCrates &&
+    //   inventory.amulGoldCrates >= amulGoldCrates &&
+    //   inventory.amulTaazaCrates >= amulTaazaCrates &&
+    //   inventory.gokulCowCrates >= gokulCowCrates &&
+    //   inventory.gokulBuffaloCrates >= gokulBuffaloCrates &&
+    //   inventory.gokulFullCreamCrates >= gokulFullCreamCrates &&
+    //   inventory.mahanandaCrates >= mahanandaCrates;
+
+    // if (!isStockAvailable) {
+    //   return res.status(400).json({ message: "Not enough stock available" });
+    // }
+
+    // // Deduct
+    // inventory.amulBuffaloCrates -= amulBuffaloCrates;
+    // inventory.amulGoldCrates -= amulGoldCrates;
+    // inventory.amulTaazaCrates -= amulTaazaCrates;
+    // inventory.gokulCowCrates -= gokulCowCrates;
+    // inventory.gokulBuffaloCrates -= gokulBuffaloCrates;
+    // inventory.gokulFullCreamCrates -= gokulFullCreamCrates;
+    // inventory.mahanandaCrates -= mahanandaCrates;
+
+    // await inventory.save();
+
+    const order = new Order({
       ...req.body,
       customer: customerId,
-    };
-    const deliveryDate = new Date(); // set delivery date to tomorrow
-    deliveryDate.setDate(deliveryDate.getDate() + 1);
-    deliveryDate.setHours(4, 0, 0, 0); // assuming delivery is at 7 AM
+    });
 
-    const newOrder = new Order(orderData);
-    await newOrder.save();
-
-    res
-      .status(201)
-      .json({ message: "Order placed successfully", order: newOrder });
+    await order.save();
+    res.status(201).json({ message: "Order placed successfully", order });
   } catch (error) {
-    console.error("Error placing order:", error);
-    res
-      .status(500)
-      .json({ message: "Failed to place order", error: error.message });
+    console.error("Order error:", error);
+    res.status(500).json({ message: "Order failed", error: error.message });
   }
 };
 

@@ -1,6 +1,6 @@
 const Order = require("../models/Order");
 const { Parser } = require("json2csv");
-
+const { Inventory } = require("../models/Inventory");
 // GET /api/admin/orders
 const getAllOrders = async (req, res) => {
   try {
@@ -86,5 +86,52 @@ const getDailyDeliveryCSV = async (req, res) => {
     res.status(500).json({ message: "Failed to generate CSV" });
   }
 };
+const setInventoryForDate = async (req, res) => {
+  try {
+    const { date, ...inventoryData } = req.body;
+    const cleanDate = new Date(date);
+    cleanDate.setHours(0, 0, 0, 0);
 
-module.exports = { getAllOrders, updateOrderStatus, getDailyDeliveryCSV };
+    const existing = await Inventory.findOne({ date: cleanDate });
+
+    if (existing) {
+      // Update existing
+      await Inventory.updateOne({ date: cleanDate }, inventoryData);
+      return res.status(200).json({ message: "Inventory updated" });
+    }
+
+    // Create new
+    const inventory = new Inventory({ date: cleanDate, ...inventoryData });
+    await inventory.save();
+    res.status(201).json({ message: "Inventory created" });
+  } catch (err) {
+    console.error("Error setting inventory:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get Inventory for a Specific Date
+const getInventoryForDate = async (req, res) => {
+  try {
+    const cleanDate = new Date(req.params.date);
+    cleanDate.setHours(0, 0, 0, 0);
+
+    const inventory = await Inventory.findOne({ date: cleanDate });
+
+    if (!inventory)
+      return res.status(404).json({ message: "Inventory not found" });
+
+    res.status(200).json(inventory);
+  } catch (err) {
+    console.error("Error getting inventory:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = {
+  getAllOrders,
+  updateOrderStatus,
+  getDailyDeliveryCSV,
+  getInventoryForDate,
+  setInventoryForDate,
+};

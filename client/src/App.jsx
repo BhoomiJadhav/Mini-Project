@@ -8,6 +8,8 @@ import CustomerDashboard from "./pages/customer-dashboard/index";
 import PlaceOrder from "./pages/customer-dashboard/place-order/index";
 import OngoingOrders from "./pages/customer-dashboard/orders/ongoing";
 import OrderHistory from "./pages/customer-dashboard/orders/history";
+import InventoryManagement from "./pages/admin-dashboard/inventory";
+import MilkPrices from "./pages/Products";
 
 const App = () => {
   return (
@@ -16,6 +18,7 @@ const App = () => {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/prices" element={<MilkPrices />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/customer-dashboard" element={<CustomerDashboard />} />
         <Route
@@ -24,6 +27,10 @@ const App = () => {
         />
         <Route path="/customer-dashboard/ongoing" element={<OngoingOrders />} />
         <Route path="/customer-dashboard/history" element={<OrderHistory />} />
+        <Route
+          path="/admin-dashboard/inventory"
+          element={<InventoryManagement />}
+        />
       </Routes>
     </Router>
   );
