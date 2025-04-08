@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/login";
 import RegisterPage from "./pages/Register";
-import AdminDashboard from "./pages/dashboard/admin";
+import AdminDashboard from "./pages/admin-dashboard/index";
 import CustomerDashboard from "./pages/customer-dashboard/index";
 import PlaceOrder from "./pages/customer-dashboard/place-order/index";
 import OngoingOrders from "./pages/customer-dashboard/orders/ongoing";

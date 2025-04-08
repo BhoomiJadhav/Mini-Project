@@ -1,30 +1,90 @@
 const Order = require("../models/Order");
+const { Parser } = require("json2csv");
 
-const getOrdersForAdmin = async (req, res) => {
+// GET /api/admin/orders
+const getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find()
-      .populate("customer", "name email")
-      .sort({ deliveryTime: 1 });
-    res.json(orders);
+    const allOrders = await Order.find({})
+      .populate("customer", "name email address") // Optional: to show customer details
+      .sort({ deliveryDate: 1 });
+
+    res.status(200).json(allOrders);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error fetching orders:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
+// PATCH /api/admin/orders/:id/status
 const updateOrderStatus = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id);
+    const { paymentStatus, status } = req.body;
 
-    if (!order) return res.status(404).json({ message: "Order not found" });
+    const updated = await Order.findByIdAndUpdate(
+      req.params.id,
+      { ...(paymentStatus && { paymentStatus }), ...(status && { status }) },
+      { new: true }
+    );
 
-    order.status = req.body.status || order.status;
-    order.paymentStatus = req.body.paymentStatus || order.paymentStatus;
+    res.status(200).json(updated);
+  } catch (err) {
+    console.error("Error updating status:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+const getDailyDeliveryCSV = async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    await order.save();
-    res.json(order);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const orders = await Order.find({
+      deliveryDate: { $gte: today, $lt: tomorrow },
+    }).populate("customer", "name email address");
+
+    // Flatten the data for CSV
+    const flatOrders = orders.map((order) => ({
+      customerName: order.shopName || "N/A",
+      customerAddress: order.address || "N/A",
+      deliveryDate: order.deliveryDate,
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      amulBuffaloCrates: order.amulBuffaloCrates,
+      amulGoldCrates: order.amulGoldCrates,
+      amulTaazaCrates: order.amulTaazaCrates,
+      gokulCowCrates: order.gokulCowCrates,
+      gokulBuffaloCrates: order.gokulBuffaloCrates,
+      gokulFullCreamCrates: order.gokulFullCreamCrates,
+      mahanandaCrates: order.mahanandaCrates,
+    }));
+
+    const fields = [
+      "customerName",
+      "customerAddress",
+      "deliveryDate",
+      "status",
+      "paymentStatus",
+      "amulBuffaloCrates",
+      "amulGoldCrates",
+      "amulTaazaCrates",
+      "gokulCowCrates",
+      "gokulBuffaloCrates",
+      "gokulFullCreamCrates",
+      "mahanandaCrates",
+    ];
+
+    const parser = new Parser({ fields });
+    const csv = parser.parse(flatOrders);
+
+    res.header("Content-Type", "text/csv");
+    res.attachment("daily-deliveries.csv");
+    return res.send(csv);
+  } catch (err) {
+    console.error("CSV export error:", err);
+    res.status(500).json({ message: "Failed to generate CSV" });
   }
 };
 
-module.exports = { getOrdersForAdmin, updateOrderStatus };
+module.exports = { getAllOrders, updateOrderStatus, getDailyDeliveryCSV };
