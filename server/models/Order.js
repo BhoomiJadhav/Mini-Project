@@ -24,6 +24,10 @@ const orderSchema = new mongoose.Schema({
   status: { type: String, default: "Pending" },
   paymentStatus: { type: String, default: "Unpaid" },
   createdAt: { type: Date, default: Date.now },
+  deliveryDate: {
+    type: Date,
+    required: true,
+  },
 });
 
 module.exports = mongoose.model("Order", orderSchema);
