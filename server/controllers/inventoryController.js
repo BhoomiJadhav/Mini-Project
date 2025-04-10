@@ -80,9 +80,24 @@ const updateInventoryByDate = async (req, res) => {
       .json({ message: "Failed to update inventory", error: error.message });
   }
 };
+// inventoryController.js
+const getLowInventoryItems = async (req, res) => {
+  const date = new Date(req.params.date);
+  date.setHours(0, 0, 0, 0);
+  const inventory = await Inventory.findOne({ date });
+  if (!inventory)
+    return res.status(404).json({ message: "Inventory not found" });
+
+  const lowItems = Object.entries(inventory.toObject()).filter(
+    ([key, val]) => key !== "_id" && key !== "date" && val < 50
+  );
+
+  res.status(200).json({ lowStock: lowItems });
+};
 
 module.exports = {
   createInventory,
   getInventoryByDate,
   updateInventoryByDate,
+  getLowInventoryItems,
 };

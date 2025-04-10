@@ -121,9 +121,22 @@ const Ongoing = () => {
                     <p>
                       <strong>Delivery Time:</strong> {order.deliveryTime}
                     </p>
+                    <div className="space-y-2">
+                      <strong>Milk Crates:</strong>
+                      <div className="pl-4 space-y-1">
+                        <p>Amul Taaza Crates: {order.amulTaazaCrates}</p>
+                        <p>Amul Gold Crates: {order.amulGoldCrates}</p>
+                        <p>Amul Buffalo Crates: {order.amulBuffaloCrates}</p>
+                        <p>Gokul Cow Crates: {order.gokulCowCrates}</p>
+                        <p>Gokul Buffalo Crates: {order.gokulBuffaloCrates}</p>
+                        <p>
+                          Gokul FullCream Crates: {order.gokulFullCreamCrates}
+                        </p>
+                        <p>Mahananda: {order.mahanandaCrates}</p>
+                      </div>
+                    </div>
                     <p>
-                      <strong>Milk Crates:</strong> Amul: {order.amul}, Gokul:{" "}
-                      {order.gokul}, Mahananda: {order.mahananda}
+                      <strong>Amount:-</strong> {order.totalAmount}
                     </p>
                     <p>
                       <strong>Payment Method:</strong> {order.paymentMethod}

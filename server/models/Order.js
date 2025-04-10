@@ -16,6 +16,7 @@ const orderSchema = new mongoose.Schema({
   gokulBuffaloCrates: { type: Number, default: 0 },
   gokulFullCreamCrates: { type: Number, default: 0 },
   mahanandaCrates: { type: Number, default: 0 },
+  paymentScreenshot: { type: String, default: null },
   paymentMethod: {
     type: String,
     enum: ["ONLINE", "COD"],
@@ -23,6 +24,10 @@ const orderSchema = new mongoose.Schema({
   },
   status: { type: String, default: "Pending" },
   paymentStatus: { type: String, default: "Unpaid" },
+  totalAmount: {
+    type: Number,
+    required: true,
+  },
   createdAt: { type: Date, default: Date.now },
   deliveryDate: {
     type: Date,

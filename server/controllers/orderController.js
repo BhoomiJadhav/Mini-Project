@@ -1,6 +1,6 @@
 const Order = require("../models/Order.js");
 const jwt = require("jsonwebtoken");
-// const Inventory = require("../models/Inventory");
+const Inventory = require("../models/Inventory");
 
 // Helper to extract user ID from token
 const getUserIdFromToken = (req) => {
@@ -17,71 +17,186 @@ const getUserIdFromToken = (req) => {
 };
 
 // Place a new order
+// const placeOrder = async (req, res) => {
+//   try {
+//     const authHeader = req.headers.authorization;
+//     if (!authHeader || !authHeader.startsWith("Bearer ")) {
+//       return res
+//         .status(401)
+//         .json({ message: "Unauthorized: No token provided" });
+//     }
+
+//     const token = authHeader.split(" ")[1];
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     const customerId = decoded.userId;
+
+//     const {
+//       amulBuffaloCrates = 0,
+//       amulGoldCrates = 0,
+//       amulTaazaCrates = 0,
+//       gokulCowCrates = 0,
+//       gokulBuffaloCrates = 0,
+//       gokulFullCreamCrates = 0,
+//       mahanandaCrates = 0,
+//     } = req.body;
+
+//     const deliveryDate = new Date();
+//     deliveryDate.setDate(deliveryDate.getDate() + 1);
+//     deliveryDate.setHours(0, 0, 0, 0); // clean start of day
+
+//     // const inventory = await Inventory.findOne({ date: deliveryDate });
+//     // if (!inventory) {
+//     //   return res
+//     //     .status(400)
+//     //     .json({ message: "Inventory not set for that day" });
+//     // }
+
+//     // // Check if enough stock
+//     // const isStockAvailable =
+//     //   inventory.amulBuffaloCrates >= amulBuffaloCrates &&
+//     //   inventory.amulGoldCrates >= amulGoldCrates &&
+//     //   inventory.amulTaazaCrates >= amulTaazaCrates &&
+//     //   inventory.gokulCowCrates >= gokulCowCrates &&
+//     //   inventory.gokulBuffaloCrates >= gokulBuffaloCrates &&
+//     //   inventory.gokulFullCreamCrates >= gokulFullCreamCrates &&
+//     //   inventory.mahanandaCrates >= mahanandaCrates;
+
+//     // if (!isStockAvailable) {
+//     //   return res.status(400).json({ message: "Not enough stock available" });
+//     // }
+
+//     // // Deduct
+//     // inventory.amulBuffaloCrates -= amulBuffaloCrates;
+//     // inventory.amulGoldCrates -= amulGoldCrates;
+//     // inventory.amulTaazaCrates -= amulTaazaCrates;
+//     // inventory.gokulCowCrates -= gokulCowCrates;
+//     // inventory.gokulBuffaloCrates -= gokulBuffaloCrates;
+//     // inventory.gokulFullCreamCrates -= gokulFullCreamCrates;
+//     // inventory.mahanandaCrates -= mahanandaCrates;
+
+//     // await inventory.save();
+
+//     const order = new Order({
+//       customer: req.user._id,
+//       shopName,
+//       address,
+//       deliveryTime,
+//       deliveryDate,
+//       amulTaazaCrates,
+//       amulGoldCrates,
+//       amulBuffaloCrates,
+//       gokulCowCrates,
+//       gokulBuffaloCrates,
+//       gokulFullCreamCrates,
+//       mahanandaCrates,
+//       paymentMethod,
+//       paymentScreenshot: paymentMethod === "Online" ? paymentScreenshot : null,
+//       paymentStatus: paymentMethod === "Online" ? "Pending" : "Unpaid",
+//       status: "Pending",
+//     });
+
+//     await order.save();
+//     res.status(201).json({ message: "Order placed successfully", order });
+//   } catch (error) {
+//     console.error("Order error:", error);
+//     res.status(500).json({ message: "Order failed", error: error.message });
+//   }
+//   const inventory = await Inventory.findOne({ date: tomorrowDate });
+
+//   if (!inventory || inventory[productKey] < orderQty) {
+//     return res.status(400).json({ message: "Insufficient inventory" });
+//   }
+
+//   inventory[productKey] -= orderQty;
+//   await inventory.save();
+// };
 const placeOrder = async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized: No token provided" });
-    }
-
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const customerId = decoded.userId;
-
     const {
-      amulBuffaloCrates = 0,
-      amulGoldCrates = 0,
+      shopName,
+      address,
+      deliveryTime,
+      deliveryDate,
       amulTaazaCrates = 0,
+      amulGoldCrates = 0,
+      amulBuffaloCrates = 0,
       gokulCowCrates = 0,
       gokulBuffaloCrates = 0,
       gokulFullCreamCrates = 0,
       mahanandaCrates = 0,
+      paymentMethod,
+
+      totalAmount,
     } = req.body;
 
-    const deliveryDate = new Date();
-    deliveryDate.setDate(deliveryDate.getDate() + 1);
-    deliveryDate.setHours(0, 0, 0, 0); // clean start of day
+    // Auth
+    const token = req.headers.authorization?.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const customerId = decoded.userId;
 
-    // const inventory = await Inventory.findOne({ date: deliveryDate });
-    // if (!inventory) {
-    //   return res
-    //     .status(400)
-    //     .json({ message: "Inventory not set for that day" });
-    // }
+    // Normalize delivery date
+    const date = new Date(deliveryDate);
+    date.setHours(0, 0, 0, 0);
 
-    // // Check if enough stock
-    // const isStockAvailable =
-    //   inventory.amulBuffaloCrates >= amulBuffaloCrates &&
-    //   inventory.amulGoldCrates >= amulGoldCrates &&
-    //   inventory.amulTaazaCrates >= amulTaazaCrates &&
-    //   inventory.gokulCowCrates >= gokulCowCrates &&
-    //   inventory.gokulBuffaloCrates >= gokulBuffaloCrates &&
-    //   inventory.gokulFullCreamCrates >= gokulFullCreamCrates &&
-    //   inventory.mahanandaCrates >= mahanandaCrates;
+    // Fetch inventory
+    const inventory = await Inventory.findOne({ date });
+    if (!inventory) {
+      return res
+        .status(400)
+        .json({ message: "Inventory not set for this delivery date." });
+    }
 
-    // if (!isStockAvailable) {
-    //   return res.status(400).json({ message: "Not enough stock available" });
-    // }
+    // Check stock
+    const stockOK =
+      inventory.amulBuffaloCrates >= amulBuffaloCrates &&
+      inventory.amulGoldCrates >= amulGoldCrates &&
+      inventory.amulTaazaCrates >= amulTaazaCrates &&
+      inventory.gokulCowCrates >= gokulCowCrates &&
+      inventory.gokulBuffaloCrates >= gokulBuffaloCrates &&
+      inventory.gokulFullCreamCrates >= gokulFullCreamCrates &&
+      inventory.mahanandaCrates >= mahanandaCrates;
 
-    // // Deduct
-    // inventory.amulBuffaloCrates -= amulBuffaloCrates;
-    // inventory.amulGoldCrates -= amulGoldCrates;
-    // inventory.amulTaazaCrates -= amulTaazaCrates;
-    // inventory.gokulCowCrates -= gokulCowCrates;
-    // inventory.gokulBuffaloCrates -= gokulBuffaloCrates;
-    // inventory.gokulFullCreamCrates -= gokulFullCreamCrates;
-    // inventory.mahanandaCrates -= mahanandaCrates;
+    if (!stockOK) {
+      return res.status(400).json({ message: "Not enough stock available" });
+    }
 
-    // await inventory.save();
+    // Deduct stock
+    inventory.amulBuffaloCrates -= amulBuffaloCrates;
+    inventory.amulGoldCrates -= amulGoldCrates;
+    inventory.amulTaazaCrates -= amulTaazaCrates;
+    inventory.gokulCowCrates -= gokulCowCrates;
+    inventory.gokulBuffaloCrates -= gokulBuffaloCrates;
+    inventory.gokulFullCreamCrates -= gokulFullCreamCrates;
+    inventory.mahanandaCrates -= mahanandaCrates;
 
+    await inventory.save();
+
+    // Create order
+    const normalizedPaymentMethod = paymentMethod?.toUpperCase();
+    const uploadedScreenshot = req.file ? req.file.filename : null;
     const order = new Order({
-      ...req.body,
       customer: customerId,
+      shopName,
+      address,
+      deliveryTime,
+      deliveryDate: date,
+      amulTaazaCrates,
+      amulGoldCrates,
+      amulBuffaloCrates,
+      gokulCowCrates,
+      gokulBuffaloCrates,
+      gokulFullCreamCrates,
+      mahanandaCrates,
+      paymentMethod: normalizedPaymentMethod,
+      paymentScreenshot:
+        normalizedPaymentMethod === "ONLINE" ? uploadedScreenshot : null,
+      paymentStatus:
+        normalizedPaymentMethod === "ONLINE" ? "Pending" : "Unpaid",
+      totalAmount,
+      status: "Pending",
     });
-
     await order.save();
+
     res.status(201).json({ message: "Order placed successfully", order });
   } catch (error) {
     console.error("Order error:", error);
@@ -175,6 +290,12 @@ const updateOrder = async (req, res) => {
     res.json(updatedOrder);
   } catch (error) {
     console.error("Error updating order:", error);
+    console.error("Order error:", {
+      message: error.message,
+      stack: error.stack,
+      body: req.body,
+    });
+
     res.status(500).json({ message: "Server error" });
   }
 };

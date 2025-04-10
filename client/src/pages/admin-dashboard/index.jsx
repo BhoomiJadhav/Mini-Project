@@ -1,193 +1,3 @@
-// import { useNavigate } from "react-router-dom";
-// import axios from "axios";
-// import { useEffect, useState } from "react";
-
-// const AdminDashboard = () => {
-//   const navigate = useNavigate();
-//   const [orders, setOrders] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [refresh, setRefresh] = useState(false);
-
-//   useEffect(() => {
-//     const token = localStorage.getItem("token");
-//     if (!token) navigate("/login");
-//   }, []);
-//   useEffect(() => {
-//     const fetchOrders = async () => {
-//       setLoading(true);
-//       try {
-//         const token = localStorage.getItem("token");
-
-//         const res = await axios.get("/api/admin/orders", {
-//           headers: {
-//             Authorization: `Bearer ${token}`,
-//           },
-//         });
-
-//         console.log("Fetched orders:", res.data);
-//         setOrders(res.data);
-//       } catch (error) {
-//         console.error("Error fetching orders:", error);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchOrders();
-//   }, [refresh]);
-//   const handleUpdate = async (orderId, field, value) => {
-//     console.log(`Updating order: ${orderId}, field: ${field}, value: ${value}`);
-//     try {
-//       const token = localStorage.getItem("token");
-//       await axios.patch(
-//         `/api/admin/orders/${orderId}/status`,
-//         { [field]: value },
-//         {
-//           headers: {
-//             Authorization: `Bearer ${token}`,
-//           },
-//         }
-//       );
-//       setRefresh(!refresh);
-//     } catch (err) {
-//       console.error("Failed to update order:", err);
-//     }
-//   };
-
-//   const handleCSVDownload = async () => {
-//     console.log("Downloading CSV...");
-//     try {
-//       const token = localStorage.getItem("token");
-//       const res = await axios.get("/api/admin/deliveries/csv", {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//         responseType: "blob",
-//       });
-
-//       const url = window.URL.createObjectURL(new Blob([res.data]));
-//       const link = document.createElement("a");
-//       link.href = url;
-//       link.setAttribute("download", "daily-deliveries.csv");
-//       document.body.appendChild(link);
-//       link.click();
-//       link.remove();
-//     } catch (err) {
-//       console.error("CSV Download failed:", err);
-//     }
-//   };
-
-//   return (
-//     <div className="p-6">
-//       <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
-
-//       <button
-//         onClick={handleCSVDownload}
-//         className="bg-blue-600 text-white px-4 py-2 rounded mb-4"
-//       >
-//         Download Daily Deliveries CSV
-//       </button>
-
-//       {loading ? (
-//         <p>Loading orders...</p>
-//       ) : (
-//         <div className="overflow-x-auto">
-//           <table className="w-full border-collapse border border-gray-300">
-//             <thead>
-//               <tr className="bg-gray-200">
-//                 <th className="border px-4 py-2">Customer</th>
-//                 <th className="border px-4 py-2">Address</th>
-//                 <th className="border px-4 py-2">Delivery Date</th>
-//                 <th className="border px-4 py-2">Amul Buffalo</th>
-//                 <th className="border px-4 py-2">Amul Gold</th>
-//                 <th className="border px-4 py-2">Amul Taaza</th>
-//                 <th className="border px-4 py-2">Gokul Cow</th>
-//                 <th className="border px-4 py-2">Gokul Buffalo</th>
-//                 <th className="border px-4 py-2">Gokul Full Cream</th>
-//                 <th className="border px-4 py-2">Mahananda</th>
-//                 <th className="border px-4 py-2">Payment</th>
-//                 <th className="border px-4 py-2">Delivery</th>
-//                 <th className="border px-4 py-2">Actions</th>
-//               </tr>
-//             </thead>
-
-//             <tbody>
-//               {orders.map((order) => (
-//                 <tr key={order._id}>
-//                   <td className="border px-4 py-2">{order.shopName}</td>
-//                   <td className="border px-4 py-2">{order.address}</td>
-//                   <td className="border px-4 py-2">
-//                     {new Date(order.deliveryDate).toLocaleDateString("en-IN", {
-//                       day: "2-digit",
-//                       month: "short",
-//                       year: "numeric",
-//                     })}
-//                   </td>
-//                   <td className="border px-4 py-2">
-//                     {order.amulBuffaloCrates}
-//                   </td>
-//                   <td className="border px-4 py-2">{order.amulGoldCrates}</td>
-//                   <td className="border px-4 py-2">{order.amulTaazaCrates}</td>
-//                   <td className="border px-4 py-2">{order.gokulCowCrates}</td>
-//                   <td className="border px-4 py-2">
-//                     {order.gokulBuffaloCrates}
-//                   </td>
-//                   <td className="border px-4 py-2">
-//                     {order.gokulFullCreamCrates}
-//                   </td>
-//                   <td className="border px-4 py-2">{order.mahanandaCrates}</td>
-//                   <td className="border px-4 py-2">{order.paymentStatus}</td>
-//                   <td className="border px-4 py-2">{order.status}</td>
-//                   <td className="border px-4 py-2 space-x-2">
-//                     <button
-//                       className={`${
-//                         order.paymentStatus === "Paid"
-//                           ? "bg-red-600"
-//                           : "bg-green-600"
-//                       } text-white px-2 py-1 rounded`}
-//                       onClick={() =>
-//                         handleUpdate(
-//                           order._id,
-//                           "paymentStatus",
-//                           order.paymentStatus === "Paid" ? "Unpaid" : "Paid"
-//                         )
-//                       }
-//                     >
-//                       {order.paymentStatus === "Paid"
-//                         ? "Mark Unpaid"
-//                         : "Mark Paid"}
-//                     </button>
-
-//                     <button
-//                       className={`${
-//                         order.status === "Delivered"
-//                           ? "bg-red-500"
-//                           : "bg-yellow-600"
-//                       } text-white px-2 py-1 rounded`}
-//                       onClick={() =>
-//                         handleUpdate(
-//                           order._id,
-//                           "status",
-//                           order.status === "Delivered" ? "Pending" : "Delivered"
-//                         )
-//                       }
-//                     >
-//                       {order.status === "Delivered"
-//                         ? "Mark Undelivered"
-//                         : "Mark Delivered"}
-//                     </button>
-//                   </td>
-//                 </tr>
-//               ))}
-//             </tbody>
-//           </table>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default AdminDashboard;
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -197,6 +7,7 @@ const AdminDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -283,6 +94,27 @@ const AdminDashboard = () => {
         <p>Loading orders...</p>
       ) : (
         <div className="overflow-x-auto rounded shadow-md">
+          {previewImage && (
+            <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+              <div className="relative bg-white rounded-lg p-4 shadow-lg flex flex-col items-center">
+                {/* Close Button */}
+                <button
+                  onClick={() => setPreviewImage(null)}
+                  className="absolute top-2 right-2 text-gray-700 hover:text-red-500 text-xl font-bold"
+                >
+                  &times;
+                </button>
+
+                {/* Image Preview */}
+                <img
+                  src={previewImage}
+                  alt="Full Screenshot"
+                  className="max-w-3xl max-h-[75vh] rounded-md mb-4"
+                />
+              </div>
+            </div>
+          )}
+
           <table className="min-w-full bg-white text-sm text-left border border-gray-200">
             <thead className="bg-[#e9f1fb] text-[#2c3e50] font-semibold">
               <tr>
@@ -296,6 +128,8 @@ const AdminDashboard = () => {
                 <th className="px-4 py-3 border">Gokul Buffalo</th>
                 <th className="px-4 py-3 border">Gokul Cream</th>
                 <th className="px-4 py-3 border">Mahananda</th>
+                <th className="px-4 py-3 border">Total</th>
+                <th className="px-4 py-3 border">Screenshot</th>
                 <th className="px-4 py-3 border">Payment</th>
                 <th className="px-4 py-3 border">Delivery</th>
                 <th className="px-4 py-3 border">Actions</th>
@@ -326,6 +160,26 @@ const AdminDashboard = () => {
                     {order.gokulFullCreamCrates}
                   </td>
                   <td className="px-4 py-2 border">{order.mahanandaCrates}</td>
+                  <td className="px-4 py-2 border font-semibold text-green-800">
+                    ₹{order.totalAmount || 0}
+                  </td>
+                  <td className="px-4 py-2 border text-center">
+                    {order.paymentScreenshot ? (
+                      <button
+                        onClick={() =>
+                          setPreviewImage(
+                            `http://localhost:5000/uploads/${order.paymentScreenshot}`
+                          )
+                        }
+                        className="text-blue-600 underline hover:text-blue-800"
+                      >
+                        View
+                      </button>
+                    ) : (
+                      "-"
+                    )}
+                  </td>
+
                   <td className="px-4 py-2 border">{order.paymentStatus}</td>
                   <td className="px-4 py-2 border">{order.status}</td>
                   <td className="px-4 py-2 border space-y-2">

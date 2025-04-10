@@ -58,6 +58,7 @@ const getDailyDeliveryCSV = async (req, res) => {
       gokulBuffaloCrates: order.gokulBuffaloCrates,
       gokulFullCreamCrates: order.gokulFullCreamCrates,
       mahanandaCrates: order.mahanandaCrates,
+      TotalAmount: order.totalAmount,
     }));
 
     const fields = [

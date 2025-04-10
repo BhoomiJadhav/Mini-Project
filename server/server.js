@@ -23,6 +23,7 @@ app.use("/api/auth", authRoutes); // Authentication routes
 app.use("/api/orders", orderRoutes); // Customer order management
 app.use("/api/admin", adminRoutes); // Admin controls
 app.use("/api/inventory", inventoryRoutes);
+app.use("/uploads", express.static("uploads"));
 
 app.use("/api/payment", paymentRoutes);
 

@@ -67,9 +67,25 @@ const InventoryManagement = () => {
       alert("Failed to save inventory.");
     }
   };
+  const fetchLowStock = async () => {
+    try {
+      const res = await axios.get(`/api/inventory/warnings/${date}`);
+      if (res.data.lowStock.length > 0) {
+        const lowItems = res.data.lowStock
+          .map(
+            (item) => `${item.product.replace(/Crates$/, "")}: ${item.quantity}`
+          )
+          .join("\n");
+        alert(`⚠️ Low Inventory Warning:\n\n${lowItems}`);
+      }
+    } catch (err) {
+      console.error("Error fetching low stock warnings:", err);
+    }
+  };
 
   useEffect(() => {
     fetchInventory();
+    fetchLowStock();
   }, [date]);
 
   const handleChange = (e) => {

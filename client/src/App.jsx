@@ -8,7 +8,7 @@ import CustomerDashboard from "./pages/customer-dashboard/index";
 import PlaceOrder from "./pages/customer-dashboard/place-order/index";
 import OngoingOrders from "./pages/customer-dashboard/orders/ongoing";
 import OrderHistory from "./pages/customer-dashboard/orders/history";
-import InventoryManagement from "./pages/admin-dashboard/inventory";
+import InventoryManagement from "./pages/admin-dashboard/inventory/index";
 import MilkPrices from "./pages/Products";
 
 const App = () => {
