@@ -3,7 +3,7 @@ services:
     name: frontend
     env: static
     buildCommand: npm run build
-    staticPublishPath: dist
+    staticPublishPath: build
 
     routes:
       - type: rewrite
