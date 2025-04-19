@@ -14,7 +14,13 @@ connectDB();
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://kumar-milk-distributors-frontend.onrender.com", // your frontend domain
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 
 // Import Routes
 const authRoutes = require("./routes/authRoutes");
