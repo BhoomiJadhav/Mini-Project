@@ -6,7 +6,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("home");
 
   const fetchOrders = () => {
-    fetch("http://localhost:5000/api/orders/customer", {
+    fetch("https://kumar-milk-distributors.onrender.com/api/orders/customer", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },

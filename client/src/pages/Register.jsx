@@ -71,7 +71,7 @@ const Register = () => {
       console.log("Sending Data to Backend:", cleanedData); // 🔍 Debug
 
       const res = await axios.post(
-        "http://localhost:5000/api/auth/register",
+        "https://kumar-milk-distributors.onrender.com/api/auth/register",
         cleanedData
       );
 

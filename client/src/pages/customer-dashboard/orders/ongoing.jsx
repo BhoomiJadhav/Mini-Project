@@ -14,7 +14,7 @@ const Ongoing = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          "http://localhost:5000/api/orders/ongoing",
+          "https://kumar-milk-distributors.onrender.com/api/orders/ongoing",
           {
             headers: { Authorization: `Bearer ${token}` },
           }

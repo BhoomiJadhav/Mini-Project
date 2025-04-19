@@ -56,9 +56,15 @@ const InventoryManagement = () => {
     e.preventDefault();
     try {
       if (inventory) {
-        await axios.put(`/api/inventory/${date}`, form);
+        await axios.put(
+          `https://kumar-milk-distributors.onrender.com/api/inventory/${date}`,
+          form
+        );
       } else {
-        await axios.post(`/api/inventory`, { ...form, date });
+        await axios.post(
+          `https://kumar-milk-distributors.onrender.com/api/inventory`,
+          { ...form, date }
+        );
       }
       alert("Inventory saved!");
       fetchInventory();
@@ -69,7 +75,9 @@ const InventoryManagement = () => {
   };
   const fetchLowStock = async () => {
     try {
-      const res = await axios.get(`/api/inventory/warnings/${date}`);
+      const res = await axios.get(
+        `https://kumar-milk-distributors.onrender.com/api/inventory/warnings/${date}`
+      );
       if (res.data.lowStock.length > 0) {
         const lowItems = res.data.lowStock
           .map(

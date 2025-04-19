@@ -26,9 +26,12 @@ const Home = () => {
     const fetchSummary = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("/api/admin/monthly-summary", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get(
+          "https://kumar-milk-distributors.onrender.com/api/admin/monthly-summary",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         setSummary(res.data);
       } catch (err) {
         console.error("Failed to fetch admin summary:", err);

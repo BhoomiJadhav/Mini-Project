@@ -9,11 +9,14 @@ const History = () => {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/orders/history", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const res = await fetch(
+          "https://kumar-milk-distributors.onrender.com/api/orders/history",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
         const data = await res.json();
         setOrders(data);
       } catch (err) {

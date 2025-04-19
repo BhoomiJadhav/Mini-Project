@@ -32,7 +32,7 @@ const CustomerDashboard = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          "http://localhost:5000/api/orders/summary",
+          "https://kumar-milk-distributors.onrender.com/api/orders/summary",
           {
             headers: {
               Authorization: `Bearer ${token}`,

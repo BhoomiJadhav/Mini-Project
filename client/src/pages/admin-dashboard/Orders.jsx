@@ -27,12 +27,15 @@ const AdminDashboard = () => {
       try {
         const token = localStorage.getItem("token");
 
-        const res = await axios.get("/api/admin/orders", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          params: filters,
-        });
+        const res = await axios.get(
+          "https://kumar-milk-distributors.onrender.com/api/admin/orders",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            params: filters,
+          }
+        );
 
         setOrders(res.data);
       } catch (error) {
@@ -49,7 +52,7 @@ const AdminDashboard = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.patch(
-        `/api/admin/orders/${orderId}/status`,
+        `https://kumar-milk-distributors.onrender.com/api/admin/orders/${orderId}/status`,
         { [field]: value },
         {
           headers: {
@@ -66,12 +69,15 @@ const AdminDashboard = () => {
   const handleCSVDownload = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("/api/admin/deliveries/csv", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        responseType: "blob",
-      });
+      const res = await axios.get(
+        "https://kumar-milk-distributors.onrender.com/api/admin/deliveries/csv",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          responseType: "blob",
+        }
+      );
 
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement("a");

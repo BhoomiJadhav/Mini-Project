@@ -131,14 +131,14 @@ const PlaceOrder = () => {
 
       if (isEditMode && orderId) {
         await axios.put(
-          `http://localhost:5000/api/orders/${orderId}`,
+          `https://kumar-milk-distributors.onrender.com/api/orders/${orderId}`,
           dataToSend,
           config
         );
         toast.success("Order updated successfully!");
       } else {
         await axios.post(
-          "http://localhost:5000/api/orders/place",
+          "https://kumar-milk-distributors.onrender.com/api/orders/place",
           dataToSend,
           config
         );
