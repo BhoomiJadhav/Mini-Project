@@ -1,10 +1,11 @@
 services:
   - type: web
-    name: kumar-milk-distributors-frontend
+    name: frontend
     env: static
-    staticPublishPath: build
     buildCommand: npm run build
+    staticPublishPath: dist
+
     routes:
       - type: rewrite
-        source: /*
-        destination: /index.html
+        source: "/*"
+        destination: "/index.html"
