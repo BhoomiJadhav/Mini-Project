@@ -132,8 +132,6 @@ const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Automatically assign role based on email
-    // Use role from DB instead of hardcoded
     const role = user.role;
 
     const token = jwt.sign(
@@ -145,7 +143,8 @@ const loginUser = async (req, res) => {
     res.json({
       token,
       role,
-      redirectTo: role === "admin" ? "/admin-dashboard" : "/customer-dashboard",
+      redirectTo:
+        role === "admin" ? "/admin-dashboard/home" : "/customer-dashboard",
     });
   } catch (err) {
     console.error("Login error:", err);

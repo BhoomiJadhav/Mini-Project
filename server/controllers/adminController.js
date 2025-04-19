@@ -1,21 +1,50 @@
 const Order = require("../models/Order");
 const { Parser } = require("json2csv");
 const { Inventory } = require("../models/Inventory");
-// GET /api/admin/orders
+
 const getAllOrders = async (req, res) => {
   try {
-    const allOrders = await Order.find({})
-      .populate("customer", "name email address") // Optional: to show customer details
+    const { shopName, deliveryDate, paymentStatus, status } = req.query;
+
+    const query = {};
+
+    // 🔍 Shop name search (partial match)
+    if (shopName) {
+      query.shopName = { $regex: shopName, $options: "i" };
+    }
+
+    // 📅 Exact delivery date match
+    if (deliveryDate) {
+      const date = new Date(deliveryDate);
+      date.setHours(0, 0, 0, 0);
+
+      const nextDate = new Date(date);
+      nextDate.setDate(nextDate.getDate() + 1);
+
+      query.deliveryDate = { $gte: date, $lt: nextDate };
+    }
+
+    // 💰 Payment status filter
+    if (paymentStatus) {
+      query.paymentStatus = paymentStatus;
+    }
+
+    // 📦 Delivery status filter
+    if (status) {
+      query.status = status;
+    }
+
+    const allOrders = await Order.find(query)
+      .populate("customer", "name email address")
       .sort({ deliveryDate: 1 });
 
     res.status(200).json(allOrders);
   } catch (error) {
-    console.error("Error fetching orders:", error);
+    console.error("Error fetching filtered orders:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// PATCH /api/admin/orders/:id/status
 const updateOrderStatus = async (req, res) => {
   try {
     const { paymentStatus, status } = req.body;
@@ -129,10 +158,74 @@ const getInventoryForDate = async (req, res) => {
   }
 };
 
+const getMonthlySummary = async (req, res) => {
+  try {
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const orders = await Order.find({ deliveryDate: { $gte: startOfMonth } });
+
+    let totalCrates = 0;
+    let totalAmount = 0;
+    let crateCounts = {
+      amulTaazaCrates: 0,
+      amulGoldCrates: 0,
+      amulBuffaloCrates: 0,
+      gokulCowCrates: 0,
+      gokulBuffaloCrates: 0,
+      gokulFullCreamCrates: 0,
+      mahanandaCrates: 0,
+    };
+
+    const customerMap = {};
+
+    for (const order of orders) {
+      totalAmount += order.totalAmount || 0;
+
+      for (const key in crateCounts) {
+        crateCounts[key] += order[key] || 0;
+        totalCrates += order[key] || 0;
+      }
+
+      const shop = order.shopName;
+      if (!customerMap[shop]) {
+        customerMap[shop] = { shopName: shop, totalAmount: 0, totalCrates: 0 };
+      }
+
+      customerMap[shop].totalAmount += order.totalAmount || 0;
+      customerMap[shop].totalCrates += Object.keys(crateCounts).reduce(
+        (sum, k) => sum + (order[k] || 0),
+        0
+      );
+    }
+
+    const mostOrdered = Object.entries(crateCounts).sort(
+      (a, b) => b[1] - a[1]
+    )[0][0];
+    const topCustomers = Object.values(customerMap)
+      .sort((a, b) => b.totalAmount - a.totalAmount)
+      .slice(0, 3);
+
+    res.json({
+      totalOrders: orders.length,
+      totalAmount,
+      totalCrates,
+      mostOrderedProduct: mostOrdered,
+      crateBreakdown: crateCounts,
+      topCustomers,
+    });
+  } catch (err) {
+    console.error("Monthly summary error:", err);
+    res.status(500).json({ message: "Failed to fetch summary" });
+  }
+};
+
 module.exports = {
   getAllOrders,
   updateOrderStatus,
   getDailyDeliveryCSV,
   getInventoryForDate,
   setInventoryForDate,
+  getMonthlySummary,
 };

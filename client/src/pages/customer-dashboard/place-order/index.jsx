@@ -6,13 +6,13 @@ import { Link } from "react-router-dom";
 import PaymentQR from "../../../assets/qr-code.jpg";
 
 const cratePrices = {
-  amulTaazaCrates: 28,
-  amulGoldCrates: 32,
-  amulBuffaloCrates: 30,
-  gokulCowCrates: 27,
-  gokulBuffaloCrates: 29,
-  gokulFullCreamCrates: 31,
-  mahanandaCrates: 26,
+  amulTaazaCrates: 633.24,
+  amulGoldCrates: 633,
+  amulBuffaloCrates: 812.4,
+  gokulCowCrates: 36,
+  gokulBuffaloCrates: 36,
+  gokulFullCreamCrates: 72,
+  mahanandaCrates: 56,
 };
 
 const PlaceOrder = () => {
@@ -83,44 +83,6 @@ const PlaceOrder = () => {
     }
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     const token = localStorage.getItem("token");
-  //     const config = {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     };
-
-  //     const dataToSend = {
-  //       ...form,
-  //       totalAmount: calculateTotal(),
-  //     };
-
-  //     if (isEditMode && orderId) {
-  //       await axios.put(
-  //         `http://localhost:5000/api/orders/${orderId}`,
-  //         dataToSend,
-  //         config
-  //       );
-  //       toast.success("Order updated successfully!");
-  //     } else {
-  //       await axios.post(
-  //         "http://localhost:5000/api/orders/place",
-  //         dataToSend,
-  //         config
-  //       );
-  //       toast.success("Order placed successfully!");
-  //     }
-
-  //     localStorage.removeItem("editOrder");
-  //     navigate("/customer-dashboard/ongoing");
-  //   } catch (error) {
-  //     console.error(error);
-  //     toast.error("Something went wrong!");
-  //   }
-  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -194,33 +156,33 @@ const PlaceOrder = () => {
   return (
     <div className="flex min-h-screen bg-[#f8f8f8]">
       {/* Sidebar */}
-      <div className="w-64 bg-[#4F83CC] text-white p-6 space-y-6 hidden md:block shadow-md">
-        <h2 className="text-2xl font-bold">Kumar Milk Distributors</h2>
+      <div className="w-64 bg-[#1E3A8A] text-white p-6 space-y-6 hidden md:block shadow-md">
+        <h2 className="text-2xl font-bold mb-8">Kumar Milk Distributors</h2>
         <nav className="space-y-4">
           <Link
             to="/customer-dashboard"
-            className="block hover:bg-white hover:text-[#4F83CC] px-3 py-2 rounded"
+            className="block hover:bg-[#314E9E] hover:text-[#fff] px-4 py-2 rounded transition"
           >
-            Dashboard
+            📊 Dashboard
           </Link>
           <Link
             to="/customer-dashboard/ongoing"
-            className="block hover:bg-white hover:text-[#4F83CC] px-3 py-2 rounded"
+            className="block hover:bg-[#21242b] hover:text-[#fff] px-4 py-2 rounded transition"
           >
-            Ongoing Orders
+            📦 Ongoing Orders
           </Link>
           <Link
             to="/customer-dashboard/history"
-            className="block hover:bg-white hover:text-[#4F83CC] px-3 py-2 rounded"
+            className="block hover:bg-[#314E9E] hover:text-[#fff] px-4 py-2 rounded transition"
           >
-            Order History
+            🕒 Previous Orders
           </Link>
         </nav>
       </div>
 
       {/* Main Form Area */}
       <div className="flex-1 p-6">
-        <h1 className="text-3xl font-bold text-[#4F83CC] mb-6">
+        <h1 className="text-3xl font-bold text-[#1E3A8A] mb-6">
           {isEditMode ? "Edit Order" : "Place New Order"}
         </h1>
 
@@ -374,7 +336,7 @@ const PlaceOrder = () => {
 
           <button
             type="submit"
-            className="w-full bg-[#4F83CC] text-white p-3 rounded hover:bg-[#83a4c8] transition"
+            className="w-full bg-[#1E3A8A] text-white p-3 rounded hover:bg-[#483CCc] transition"
           >
             {isEditMode ? "Update Order" : "Place Order"}
           </button>

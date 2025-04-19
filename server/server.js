@@ -6,6 +6,8 @@ const paymentRoutes = require("./routes/payment");
 const inventoryRoutes = require("./routes/inventoryRoutes");
 
 const app = express();
+const updateOrderStatuses = require("./cron/updateOrderStatus");
+updateOrderStatuses();
 
 // Connect to MongoDB
 connectDB();

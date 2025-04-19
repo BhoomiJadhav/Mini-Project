@@ -3,6 +3,7 @@ const {
   getAllOrders,
   updateOrderStatus,
   getDailyDeliveryCSV,
+  getMonthlySummary,
 } = require("../controllers/adminController");
 const {
   setInventoryForDate,
@@ -15,6 +16,7 @@ const router = express.Router();
 router.get("/orders", protect, adminOnly, getAllOrders);
 router.patch("/orders/:id/status", protect, adminOnly, updateOrderStatus);
 router.get("/deliveries/csv", protect, adminOnly, getDailyDeliveryCSV);
+router.get("/monthly-summary", protect, getMonthlySummary);
 
 router.post("/inventory", protect, adminOnly, setInventoryForDate);
 router.get("/inventory/:date", protect, adminOnly, getInventoryForDate);

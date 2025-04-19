@@ -1,6 +1,8 @@
 const Order = require("../models/Order.js");
 const jwt = require("jsonwebtoken");
 const Inventory = require("../models/Inventory");
+const PDFDocument = require("pdfkit");
+const generateInvoice = require("../utils/generateInvoice.js");
 
 // Helper to extract user ID from token
 const getUserIdFromToken = (req) => {
@@ -16,100 +18,6 @@ const getUserIdFromToken = (req) => {
   return decoded.userId;
 };
 
-// Place a new order
-// const placeOrder = async (req, res) => {
-//   try {
-//     const authHeader = req.headers.authorization;
-//     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-//       return res
-//         .status(401)
-//         .json({ message: "Unauthorized: No token provided" });
-//     }
-
-//     const token = authHeader.split(" ")[1];
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-//     const customerId = decoded.userId;
-
-//     const {
-//       amulBuffaloCrates = 0,
-//       amulGoldCrates = 0,
-//       amulTaazaCrates = 0,
-//       gokulCowCrates = 0,
-//       gokulBuffaloCrates = 0,
-//       gokulFullCreamCrates = 0,
-//       mahanandaCrates = 0,
-//     } = req.body;
-
-//     const deliveryDate = new Date();
-//     deliveryDate.setDate(deliveryDate.getDate() + 1);
-//     deliveryDate.setHours(0, 0, 0, 0); // clean start of day
-
-//     // const inventory = await Inventory.findOne({ date: deliveryDate });
-//     // if (!inventory) {
-//     //   return res
-//     //     .status(400)
-//     //     .json({ message: "Inventory not set for that day" });
-//     // }
-
-//     // // Check if enough stock
-//     // const isStockAvailable =
-//     //   inventory.amulBuffaloCrates >= amulBuffaloCrates &&
-//     //   inventory.amulGoldCrates >= amulGoldCrates &&
-//     //   inventory.amulTaazaCrates >= amulTaazaCrates &&
-//     //   inventory.gokulCowCrates >= gokulCowCrates &&
-//     //   inventory.gokulBuffaloCrates >= gokulBuffaloCrates &&
-//     //   inventory.gokulFullCreamCrates >= gokulFullCreamCrates &&
-//     //   inventory.mahanandaCrates >= mahanandaCrates;
-
-//     // if (!isStockAvailable) {
-//     //   return res.status(400).json({ message: "Not enough stock available" });
-//     // }
-
-//     // // Deduct
-//     // inventory.amulBuffaloCrates -= amulBuffaloCrates;
-//     // inventory.amulGoldCrates -= amulGoldCrates;
-//     // inventory.amulTaazaCrates -= amulTaazaCrates;
-//     // inventory.gokulCowCrates -= gokulCowCrates;
-//     // inventory.gokulBuffaloCrates -= gokulBuffaloCrates;
-//     // inventory.gokulFullCreamCrates -= gokulFullCreamCrates;
-//     // inventory.mahanandaCrates -= mahanandaCrates;
-
-//     // await inventory.save();
-
-//     const order = new Order({
-//       customer: req.user._id,
-//       shopName,
-//       address,
-//       deliveryTime,
-//       deliveryDate,
-//       amulTaazaCrates,
-//       amulGoldCrates,
-//       amulBuffaloCrates,
-//       gokulCowCrates,
-//       gokulBuffaloCrates,
-//       gokulFullCreamCrates,
-//       mahanandaCrates,
-//       paymentMethod,
-//       paymentScreenshot: paymentMethod === "Online" ? paymentScreenshot : null,
-//       paymentStatus: paymentMethod === "Online" ? "Pending" : "Unpaid",
-//       status: "Pending",
-//     });
-
-//     await order.save();
-//     res.status(201).json({ message: "Order placed successfully", order });
-//   } catch (error) {
-//     console.error("Order error:", error);
-//     res.status(500).json({ message: "Order failed", error: error.message });
-//   }
-//   const inventory = await Inventory.findOne({ date: tomorrowDate });
-
-//   if (!inventory || inventory[productKey] < orderQty) {
-//     return res.status(400).json({ message: "Insufficient inventory" });
-//   }
-
-//   inventory[productKey] -= orderQty;
-//   await inventory.save();
-// };
 const placeOrder = async (req, res) => {
   try {
     const {
@@ -256,105 +164,171 @@ const getOrderHistory = async (req, res) => {
       .json({ message: "Failed to fetch order history", error: err.message });
   }
 };
+
 const updateOrder = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id);
+    const userId = getUserIdFromToken(req);
+
+    const order = await Order.findOne({ _id: req.params.id, customer: userId });
 
     if (!order) {
-      return res.status(404).json({ message: "Order not found" });
+      return res
+        .status(404)
+        .json({ message: "Order not found or access denied" });
     }
 
-    const deliveryDate = new Date(order.deliveryDate);
+    const [hours, minutes] = order.deliveryTime.split(":").map(Number);
+    const deliveryDateTime = new Date(order.deliveryDate);
+    deliveryDateTime.setHours(hours, minutes, 0, 0);
 
-    // Get cutoff time: 12 PM the day before delivery
-    const cutoffDate = new Date(deliveryDate);
-    cutoffDate.setDate(deliveryDate.getDate() - 1); // one day before delivery
-    cutoffDate.setHours(12, 0, 0, 0); // set time to 12:00 PM
+    const bufferLimit = new Date(
+      deliveryDateTime.getTime() - 2 * 60 * 60 * 1000
+    );
 
-    const now = new Date();
-
-    if (now > cutoffDate) {
+    if (new Date() > bufferLimit) {
       return res.status(403).json({
-        message:
-          "You can no longer edit this order. Edits allowed only till 12 PM a day before delivery.",
+        message: "Edit not allowed within 2 hours of delivery time.",
       });
     }
 
-    // ✅ Allow update
     const updatedOrder = await Order.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true }
+      {
+        new: true,
+      }
     );
 
     res.json(updatedOrder);
   } catch (error) {
     console.error("Error updating order:", error);
-    console.error("Order error:", {
-      message: error.message,
-      stack: error.stack,
-      body: req.body,
-    });
-
     res.status(500).json({ message: "Server error" });
   }
 };
-// DELETE /api/orders/:id
+
 const deleteOrder = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id);
+    const userId = getUserIdFromToken(req);
 
-    if (!order) return res.status(404).json({ error: "Order not found" });
+    const order = await Order.findOne({ _id: req.params.id, customer: userId });
 
-    const now = new Date();
-    const cutoff = new Date();
-    cutoff.setHours(12, 0, 0, 0);
-
-    if (now > cutoff) {
+    if (!order) {
       return res
-        .status(400)
-        .json({ error: "Cannot delete order after 12 PM of current day" });
+        .status(404)
+        .json({ error: "Order not found or access denied" });
     }
 
-    await Order.findByIdAndDelete(req.params.id);
+    const [hours, minutes] = order.deliveryTime.split(":").map(Number);
+    const deliveryDateTime = new Date(order.deliveryDate);
+    deliveryDateTime.setHours(hours, minutes, 0, 0);
 
+    const bufferLimit = new Date(
+      deliveryDateTime.getTime() - 2 * 60 * 60 * 1000
+    );
+
+    if (new Date() > bufferLimit) {
+      return res.status(400).json({
+        error: "Cannot delete order within 2 hours of delivery",
+      });
+    }
+
+    await order.deleteOne();
     res.json({ message: "Order deleted successfully" });
   } catch (err) {
-    console.error(err);
+    console.error("Delete error:", err);
     res.status(500).json({ error: "Server error" });
   }
 };
 
-const getOrderSummary = async (req, res) => {
+const getCustomerSummary = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = getUserIdFromToken(req);
 
+    // Get order statistics
     const totalOrders = await Order.countDocuments({ customer: userId });
-
     const completedOrders = await Order.countDocuments({
       customer: userId,
       status: "Delivered",
     });
-
     const ongoingOrders = await Order.countDocuments({
       customer: userId,
-      status: { $ne: "Delivered" }, // not delivered yet
+      status: { $ne: "Delivered" },
     });
-
     const unpaidOrders = await Order.countDocuments({
       customer: userId,
       paymentStatus: "Unpaid",
     });
+
+    // Monthly summary
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const orders = await Order.find({
+      customer: userId,
+      deliveryDate: { $gte: startOfMonth },
+    });
+
+    let totalCrates = 0;
+    let totalAmount = 0;
+    const crateCounts = {
+      amulTaazaCrates: 0,
+      amulGoldCrates: 0,
+      amulBuffaloCrates: 0,
+      gokulCowCrates: 0,
+      gokulBuffaloCrates: 0,
+      gokulFullCreamCrates: 0,
+      mahanandaCrates: 0,
+    };
+
+    for (const order of orders) {
+      totalAmount += order.totalAmount || 0;
+      for (const key in crateCounts) {
+        crateCounts[key] += order[key] || 0;
+        totalCrates += order[key] || 0;
+      }
+    }
+
+    const mostOrdered = Object.entries(crateCounts).sort(
+      (a, b) => b[1] - a[1]
+    )[0][0];
 
     res.json({
       total: totalOrders,
       completed: completedOrders,
       ongoing: ongoingOrders,
       unpaid: unpaidOrders,
+      totalCrates,
+      totalAmount,
+      mostOrderedProduct: mostOrdered,
+      crateBreakdown: crateCounts,
     });
   } catch (err) {
     console.error("Summary error:", err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Failed to fetch customer summary" });
+  }
+};
+
+const downloadInvoice = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const order = await Order.findById(orderId).populate(
+      "customer",
+      "name email"
+    );
+
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=invoice_${orderId}.pdf`
+    );
+    res.setHeader("Content-Type", "application/pdf");
+
+    generateInvoice(order, res);
+  } catch (err) {
+    console.error("Invoice error:", err);
+    res.status(500).json({ message: "Failed to generate invoice" });
   }
 };
 
@@ -364,5 +338,6 @@ module.exports = {
   getOrderHistory,
   updateOrder,
   deleteOrder,
-  getOrderSummary,
+  getCustomerSummary,
+  downloadInvoice,
 };

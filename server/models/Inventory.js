@@ -4,7 +4,7 @@ const inventorySchema = new mongoose.Schema({
   date: {
     type: Date,
     required: true,
-    unique: true, // Inventory is tracked per day
+    unique: true,
   },
   amulBuffaloCrates: Number,
   amulGoldCrates: Number,

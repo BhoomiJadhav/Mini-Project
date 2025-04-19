@@ -4,6 +4,13 @@ import { useEffect, useState } from "react";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const [filters, setFilters] = useState({
+    shopName: "",
+    deliveryDate: "",
+    paymentStatus: "",
+    status: "",
+  });
+
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(false);
@@ -24,6 +31,7 @@ const AdminDashboard = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          params: filters,
         });
 
         setOrders(res.data);
@@ -35,7 +43,7 @@ const AdminDashboard = () => {
     };
 
     fetchOrders();
-  }, [refresh]);
+  }, [refresh, filters]); // ✅ add filters here!
 
   const handleUpdate = async (orderId, field, value) => {
     try {
@@ -88,6 +96,59 @@ const AdminDashboard = () => {
         className="bg-[#4f83cc] hover:bg-[#3b6ea9] text-white font-medium px-5 py-2 rounded mb-6"
       >
         📥 Download Daily Deliveries CSV
+      </button>
+      {/* Filters */}
+      <div className="bg-white p-4 mb-6 rounded shadow-md grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <input
+          type="text"
+          placeholder="Shop Name"
+          className="border px-3 py-2 rounded"
+          onChange={(e) =>
+            setFilters((prev) => ({ ...prev, shopName: e.target.value }))
+          }
+        />
+        <input
+          type="date"
+          className="border px-3 py-2 rounded"
+          onChange={(e) =>
+            setFilters((prev) => ({ ...prev, deliveryDate: e.target.value }))
+          }
+        />
+        <select
+          className="border px-3 py-2 rounded"
+          onChange={(e) =>
+            setFilters((prev) => ({ ...prev, paymentStatus: e.target.value }))
+          }
+        >
+          <option value="">All Payments</option>
+          <option value="Paid">Paid</option>
+          <option value="Unpaid">Unpaid</option>
+          <option value="Pending">Pending</option>
+        </select>
+        <select
+          className="border px-3 py-2 rounded"
+          onChange={(e) =>
+            setFilters((prev) => ({ ...prev, status: e.target.value }))
+          }
+        >
+          <option value="">All Statuses</option>
+          <option value="Pending">Pending</option>
+          <option value="Delivered">Delivered</option>
+        </select>
+      </div>
+      <button
+        className="text-sm underline text-red-500 mt-1 ml-1"
+        onClick={() => {
+          setFilters({
+            shopName: "",
+            deliveryDate: "",
+            paymentStatus: "",
+            status: "",
+          });
+          setRefresh((prev) => !prev); // ✅ trigger refetch
+        }}
+      >
+        Clear Filters
       </button>
 
       {loading ? (
