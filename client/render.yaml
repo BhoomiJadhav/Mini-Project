@@ -6,6 +6,6 @@ services:
     staticPublishPath: build
 
     routes:
-      - type: rewrite
-        source: "/*"
+      - type: rewrite # 🔁 IMPORTANT: keep this as rewrite, NOT redirect
+        source: "/.*" # or "/**" if preferred
         destination: "/index.html"
